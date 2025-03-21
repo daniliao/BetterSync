@@ -36,6 +36,7 @@ public class EventViewModel:ObservableObject
             var additionalDetail: String?
             var url: String?
             var categories: [String] = []
+        //    var categoryFilter: [String] = []
             for line in lines {
                 if line.hasPrefix("BEGIN:VEVENT") {
                     title = nil
@@ -43,6 +44,7 @@ public class EventViewModel:ObservableObject
                     description = nil
                     dateStart = Date()
                     dateEnd = Date()
+                    categories = []
                     hostedOrganization = nil
                     additionalDetail = nil
                     url = nil
@@ -84,7 +86,6 @@ public class EventViewModel:ObservableObject
                     }
                 }
             }
-            
             return events
         } catch {
             print("Error reading .ics: \(error)")
@@ -126,4 +127,7 @@ public class EventViewModel:ObservableObject
         format.timeZone = TimeZone(identifier: "America/Phoenix")
         return format.string(from: time)
     }
+
+    
+
 }

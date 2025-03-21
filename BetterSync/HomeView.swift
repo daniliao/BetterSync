@@ -7,7 +7,7 @@
 import SwiftUI
 
 struct HomeView: View {
-    @StateObject var eventVM: EventViewModel = EventViewModel()
+    @StateObject private var eventVM = EventViewModel()
     @State var events: [Event] = []
     @State var eventName = ""
     @State private var showHomeView = true
@@ -16,7 +16,7 @@ struct HomeView: View {
     
     
     var body: some View {
-        
+        let catVM = CategoryViewModel(eventViewModel: eventVM)
         NavigationView{
             Form {
                 Section(){
@@ -38,9 +38,9 @@ struct HomeView: View {
                 
                 Section("Events"){
                     if toTodayView {
-                        TodayEventView(vm: eventVM, events: $events, eventName: $eventName)
+                        TodayEventView(vm: eventVM, categoryVM: catVM, events: $events, eventName: $eventName)
                     } else {
-                        AllEventView(vm: eventVM, events: $events, eventName: $eventName)
+                        AllEventView(vm: eventVM, categoryVM: catVM, events: $events, eventName: $eventName)
                     }
                 }
                 
@@ -49,8 +49,9 @@ struct HomeView: View {
             .navigationTitle("Welcome back")
             .onAppear {
                 
-                events = eventVM.processICSFiles(in: "/Users/daniel/Desktop/CSE 335/BetterSync/BetterSync")
+                events = eventVM.processICSFiles(in: "/Users/lindachen/Desktop/CSE335/BetterSync/BetterSync")
                 print("Loaded events from HomeView: \(events.count)")
+              //  print("ALL CATEGORIES: \(catVM.getAllCategories(events: events))")
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -90,11 +91,12 @@ struct HomeView: View {
 
 struct TodayEventView: View {
     @ObservedObject var vm: EventViewModel
+    var categoryVM: CategoryViewModel
     @Binding  var events: [Event]
     @Binding  var eventName: String
     @State private var isLoading = true
-    let projectFolder = "/Users/daniel/Desktop/CSE 335/BetterSync/BetterSync"
-    
+   // let projectFolder = "/Users/daniel/Desktop/CSE 335/BetterSync/BetterSync"
+    let projectFolder = "/Users/lindachen/Desktop/CSE335/BetterSync/BetterSync"
     
     private func formattedDate(from date: Date) -> String {
         let dateFormatter = DateFormatter()
@@ -103,7 +105,6 @@ struct TodayEventView: View {
     }
     
     var body: some View {
-        
         List($events) { event in
             if let timeStart = event.dateStart.wrappedValue {
                 let time = formattedDate(from: timeStart)
@@ -133,10 +134,13 @@ struct TodayEventView: View {
                         if let url = event.wrappedValue.url {
                             Text("URL: \(url)").font(.subheadline)
                         }
-                        // we need to clean category display
-                        //                            if !event.wrappedValue.category.isEmpty {
-                        //                                Text("Category: \(event.wrappedValue.category.joined(separator: ", "))")
-                        //                            }
+                    
+                        if !event.wrappedValue.category.isEmpty {
+                            Text("Category: \(categoryVM.getCategory(event: event.wrappedValue).joined(separator: ", "))")
+                            let filters = event.wrappedValue.category
+                            Text("Filters: \(categoryVM.filterCategories(categories: filters).joined(separator: ","))")
+                            
+                        }
                     }
                 }
             }
@@ -146,10 +150,12 @@ struct TodayEventView: View {
 
 struct AllEventView: View {
     @ObservedObject var vm: EventViewModel
+    var categoryVM: CategoryViewModel
     @Binding  var events: [Event]
     @Binding  var eventName: String
     @State private var isLoading = true
-    let projectFolder = "/Users/daniel/Desktop/CSE 335/BetterSync/BetterSync"
+   // let projectFolder = "/Users/daniel/Desktop/CSE 335/BetterSync/BetterSync"
+    let projectFolder = "/Users/lindachen/Desktop/CSE335/BetterSync/BetterSync"
     
     
     private func formattedDate(from date: Date) -> String {
@@ -159,9 +165,8 @@ struct AllEventView: View {
     }
     
     var body: some View {
-        
         List($events) { event in
-            
+            let categoryVM = CategoryViewModel(eventViewModel: vm)
             VStack(alignment: .leading) {
                 
                 Text(event.wrappedValue.title)
@@ -187,6 +192,12 @@ struct AllEventView: View {
                 
                 if let url = event.wrappedValue.url {
                     Text("URL: \(url)").font(.subheadline)
+                }
+                
+                if !event.wrappedValue.category.isEmpty {
+                    Text("Category: \(event.wrappedValue.category.joined(separator: ", "))")
+                    let filters = event.wrappedValue.category
+                    Text("Filters: \(categoryVM.filterCategories(categories: filters).joined(separator: ","))")
                 }
                 // we need to clean category display
                 //                            if !event.wrappedValue.category.isEmpty {

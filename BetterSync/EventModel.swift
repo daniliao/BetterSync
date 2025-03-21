@@ -18,6 +18,7 @@ struct Event: Identifiable {
     //   let status: String?               //confirmed or canceled
     let url: String?                  //asu url event
     let category: [String]
+  //  let categoryFilter: [String]
     
     
 }
