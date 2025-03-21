@@ -66,6 +66,7 @@ struct HomeView: View {
                     HStack {
                         Button(action: {
                             showHomeView = true
+                            toTodayView = false
                         }) {
                             Image(systemName: "house")
                                 .resizable()
